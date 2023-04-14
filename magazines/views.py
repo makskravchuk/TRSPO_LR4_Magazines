@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -14,6 +16,9 @@ class MagazineListAPIView(ListAPIView):
     queryset = Magazine.objects.all()
     serializer_class = MagazineSerializer
 
+    @method_decorator(cache_page(60))
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
 class MagazineAPIView(APIView):
     def get_permissions(self):
@@ -21,7 +26,7 @@ class MagazineAPIView(APIView):
             return [IsAdminPermission()]
         return [AllowAny()]
 
-
+    @method_decorator(cache_page(60))
     def get(self, request, pk):
         magazine = Magazine.objects.get(pk=pk)
         serializer = MagazineSerializer(magazine)
